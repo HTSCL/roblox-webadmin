@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WebAdmin — Roblox</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070f;--s1:#0f0f1a;--s2:#161625;--s3:#1d1d2e;
+  --border:#ffffff0f;--border2:#ffffff18;
+  --acc:#e8ff47;--text:#eeeefc;--dim:#6666aa;
+  --green:#4dff91;--red:#ff4757;--blue:#4fc3f7;--orange:#ffa502;
+  --fmono:'JetBrains Mono',monospace;--fhead:'Syne',sans-serif;
+}
+body{font-family:var(--fmono);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* LOGIN */
+#loginScreen{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);z-index:100;
+}
+.login-box{
+  width:420px;background:var(--s1);border:1px solid var(--border2);
+  border-radius:16px;padding:40px;position:relative;
+}
+.login-glow{
+  position:absolute;width:280px;height:280px;background:var(--acc);
+  border-radius:50%;filter:blur(100px);opacity:.06;
+  top:-100px;left:50%;transform:translateX(-50%);pointer-events:none;
+}
+.ltag{font-size:.62rem;letter-spacing:3px;text-transform:uppercase;color:var(--acc);margin-bottom:8px}
+.ltitle{font-family:var(--fhead);font-size:1.9rem;font-weight:800;margin-bottom:4px}
+.lsub{color:var(--dim);font-size:.75rem;margin-bottom:28px;line-height:1.6}
+.flabel{font-size:.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:5px;display:block}
+.finp{
+  width:100%;padding:10px 13px;background:var(--bg);border:1px solid var(--border2);
+  border-radius:7px;color:var(--text);font-family:var(--fmono);font-size:.8rem;
+  outline:none;margin-bottom:14px;transition:border-color .2s;
+}
+.finp:focus{border-color:var(--acc);box-shadow:0 0 0 2px #e8ff4712}
+.lerr{color:var(--red);font-size:.72rem;margin-bottom:10px;min-height:16px}
+.lbtn{
+  width:100%;padding:12px;background:var(--acc);color:#000;border:none;
+  border-radius:8px;font-family:var(--fhead);font-size:.88rem;font-weight:800;
+  cursor:pointer;letter-spacing:1px;transition:all .2s;
+}
+.lbtn:hover{background:#d4eb3c;transform:translateY(-1px);box-shadow:0 8px 20px #e8ff4725}
+.lbtn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* APP */
+#app{display:none;flex-direction:column;height:100vh}
+
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 28px;border-bottom:1px solid var(--border);
+  background:var(--s1);flex-shrink:0;
+}
+.hlogo{font-family:var(--fhead);font-size:1rem;font-weight:800;color:var(--acc);letter-spacing:1px}
+.hbadge{
+  padding:2px 9px;background:#e8ff4710;border:1px solid #e8ff4730;
+  border-radius:20px;font-size:.6rem;color:var(--acc);letter-spacing:2px;
+  text-transform:uppercase;margin-left:10px;
+}
+.hdot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);animation:blink 2s infinite;margin-left:10px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hright{display:flex;align-items:center;gap:10px}
+.hinfo{color:var(--dim);font-size:.7rem}
+.hbtn{
+  padding:5px 12px;background:transparent;border:1px solid var(--border2);
+  border-radius:6px;color:var(--dim);font-family:var(--fmono);font-size:.7rem;
+  cursor:pointer;transition:all .2s;
+}
+.hbtn:hover{border-color:var(--red);color:var(--red)}
+
+.layout{display:grid;grid-template-columns:290px 1fr;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{border-right:1px solid var(--border);overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:10px}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* MAIN */
+.mainarea{display:flex;flex-direction:column;overflow:hidden}
+
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px}
+.chead{
+  font-size:.58rem;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--dim);margin-bottom:12px;
+}
+
+/* INPUTS */
+.inp{
+  width:100%;padding:8px 11px;background:var(--bg);border:1px solid var(--border2);
+  border-radius:7px;color:var(--text);font-family:var(--fmono);font-size:.77rem;
+  outline:none;margin-bottom:8px;transition:border-color .2s;
+}
+.inp:focus{border-color:var(--acc)}
+textarea.inp{resize:none;height:60px;line-height:1.5}
+
+.btn{
+  width:100%;padding:9px;border:none;border-radius:7px;
+  font-family:var(--fmono);font-size:.77rem;font-weight:700;
+  cursor:pointer;transition:all .15s;
+}
+.bacc{background:var(--acc);color:#000}
+.bacc:hover{background:#d4eb3c;transform:translateY(-1px)}
+.bacc:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.bdanger{background:#ff475712;color:var(--red);border:1px solid #ff475730}
+.bdanger:hover{background:#ff475725}
+
+/* QUICK GRID */
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.qb{
+  padding:8px 5px;background:var(--s2);border:1px solid var(--border);
+  border-radius:7px;color:var(--text);font-family:var(--fmono);font-size:.7rem;
+  cursor:pointer;transition:all .15s;text-align:center;
+}
+.qb:hover{border-color:var(--acc);color:var(--acc);transform:translateY(-1px)}
+.qb.r:hover{border-color:var(--red);color:var(--red)}
+.qb.o:hover{border-color:var(--orange);color:var(--orange)}
+
+/* LOG */
+.logwrap{flex:1;padding:18px 22px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.logtitle{display:flex;justify-content:space-between;align-items:center}
+.logtitle span{font-size:.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+.logtitle button{background:transparent;border:none;color:var(--dim);cursor:pointer;font-family:var(--fmono);font-size:.62rem}
+.logbox{
+  flex:1;background:var(--s1);border:1px solid var(--border);border-radius:10px;
+  padding:12px;overflow-y:auto;font-size:.73rem;line-height:1.8;
+}
+.logbox::-webkit-scrollbar{width:3px}
+.logbox::-webkit-scrollbar-thumb{background:var(--border2)}
+.ll{display:flex;gap:8px;border-bottom:1px solid #ffffff04;padding:1px 0}
+.ll .t{color:var(--dim);font-size:.65rem;flex-shrink:0}
+.ll .m{flex:1}
+.ll.ok .m{color:var(--green)}
+.ll.er .m{color:var(--red)}
+.ll.in .m{color:var(--blue)}
+.ll.wn .m{color:var(--orange)}
+.logempty{color:var(--dim);text-align:center;padding:20px;font-size:.73rem}
+
+/* CMD TABLE */
+.cmdsect{padding:0 22px 16px;overflow-y:auto;max-height:240px}
+.cmdsect::-webkit-scrollbar{width:3px}
+.cmdsect::-webkit-scrollbar-thumb{background:var(--border2)}
+.sectitle{
+  font-size:.58rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--dim);padding:10px 22px 8px;border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.ctable{width:100%;border-collapse:collapse;font-size:.73rem}
+.ctable th{text-align:left;padding:7px 10px;color:var(--dim);font-size:.58rem;letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid var(--border);font-weight:400}
+.ctable td{padding:7px 10px;border-bottom:1px solid #ffffff04}
+.ctable tr:hover td{background:var(--s2);cursor:pointer}
+.cmono{color:var(--acc);font-family:var(--fmono)}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:.58rem;font-weight:600;letter-spacing:.5px}
+.bmod{background:#4fc3f712;color:var(--blue);border:1px solid #4fc3f728}
+.badm{background:#e8ff4710;color:var(--acc);border:1px solid #e8ff4725}
+.bhead{background:#ff475712;color:var(--red);border:1px solid #ff475728}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:22px;right:22px;
+  background:var(--s2);border:1px solid var(--border2);border-radius:10px;
+  padding:11px 16px;font-size:.75rem;
+  transform:translateY(60px);opacity:0;
+  transition:all .3s cubic-bezier(.175,.885,.32,1.275);z-index:200;max-width:280px;
+}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.ok{border-color:var(--green);color:var(--green)}
+#toast.er{border-color:var(--red);color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-glow"></div>
+    <div class="ltag">// Roblox Admin</div>
+    <h1 class="ltitle">WebAdmin</h1>
+    <p class="lsub">Exécute des commandes Adonis<br/>depuis le navigateur.</p>
+
+    <label class="flabel">Universe ID</label>
+    <input class="finp" id="lUid" placeholder="ex: 123456789"/>
+
+    <label class="flabel">Open Cloud API Key</label>
+    <input class="finp" id="lKey" type="password" placeholder="roblox-key-abc123..."/>
+
+    <label class="flabel">Secret Key (même que dans le plugin Lua)</label>
+    <input class="finp" id="lSec" type="password" placeholder="ex: monSecret123"/>
+
+    <div class="lerr" id="lerr"></div>
+    <button class="lbtn" id="lbtn" onclick="login()">ACCÉDER AU PANEL →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div style="display:flex;align-items:center">
+      <span class="hlogo">WEBADMIN</span>
+      <span class="hbadge">ROBLOX</span>
+      <span class="hdot"></span>
+    </div>
+    <div class="hright">
+      <span class="hinfo" id="hinfo"></span>
+      <button class="hbtn" onclick="logout()">DÉCO</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+      <div class="card">
+        <div class="chead">⚡ Commande directe</div>
+        <input class="inp" id="cmdinp" placeholder=":kill PlayerName"/>
+        <button class="btn bacc" id="sendbtn" onclick="sendCmd()">▶ ENVOYER</button>
+      </div>
+
+      <div class="card">
+        <div class="chead">🎯 Cible rapide</div>
+        <input class="inp" id="qtarget" placeholder="Nom du joueur"/>
+        <div class="qgrid">
+          <div class="qb r" onclick="qc('kick')">👢 Kick</div>
+          <div class="qb r" onclick="qc('ban')">🚫 Ban</div>
+          <div class="qb" onclick="qc('kill')">💀 Kill</div>
+          <div class="qb" onclick="qc('respawn')">🔄 Respawn</div>
+          <div class="qb" onclick="qc('ff')">🛡️ FF</div>
+          <div class="qb" onclick="qc('unff')">❌ UnFF</div>
+          <div class="qb" onclick="qc('freeze')">🧊 Freeze</div>
+          <div class="qb" onclick="qc('thaw')">🔥 Thaw</div>
+          <div class="qb o" onclick="qc('mute')">🔇 Mute</div>
+          <div class="qb o" onclick="qc('unmute')">🔊 Unmute</div>
+          <div class="qb" onclick="qc('god')">⭐ God</div>
+          <div class="qb" onclick="qc('ungod')">💫 UnGod</div>
+          <div class="qb o" onclick="qc('jail')">🔒 Jail</div>
+          <div class="qb o" onclick="qc('unjail')">🔓 Unjail</div>
+          <div class="qb" onclick="qc('bring')">📍 Bring</div>
+          <div class="qb" onclick="qc('sparkles')">✨ Sparkles</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="chead">📢 Message serveur</div>
+        <textarea class="inp" id="smmsg" placeholder="Ton annonce..."></textarea>
+        <button class="btn bacc" onclick="sendSM()">📣 ENVOYER À TOUS</button>
+      </div>
+
+      <div class="card">
+        <div class="chead">⚠️ Danger</div>
+        <button class="btn bdanger" onclick="doShutdown()">🔴 SHUTDOWN</button>
+      </div>
+
+    </div>
+
+    <!-- MAIN -->
+    <div class="mainarea">
+      <div class="logwrap">
+        <div class="logtitle">
+          <span>// Journal</span>
+          <button onclick="clearLog()">EFFACER</button>
+        </div>
+        <div class="logbox" id="logbox">
+          <div class="logempty">En attente de commandes...</div>
+        </div>
+      </div>
+
+      <div class="sectitle">// Commandes — clique pour remplir</div>
+      <div class="cmdsect">
+        <table class="ctable">
+          <thead><tr><th>Commande</th><th>Usage</th><th>Niveau</th></tr></thead>
+          <tbody id="ctbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Config session (jamais sauvegardé côté serveur) ────────────
+let S = { uid:'', key:'', sec:'' };
+
+const CMDS = [
+  {n:'kick',     u:':kick <player> [reason]',  l:'Moderators'},
+  {n:'ban',      u:':ban <player> [reason]',   l:'Admins'},
+  {n:'unban',    u:':unban <player>',           l:'Admins'},
+  {n:'kill',     u:':kill <player>',            l:'Moderators'},
+  {n:'ff',       u:':ff <player>',              l:'Moderators'},
+  {n:'unff',     u:':unff <player>',            l:'Moderators'},
+  {n:'god',      u:':god <player>',             l:'Admins'},
+  {n:'ungod',    u:':ungod <player>',           l:'Admins'},
+  {n:'freeze',   u:':freeze <player>',          l:'Moderators'},
+  {n:'thaw',     u:':thaw <player>',            l:'Moderators'},
+  {n:'mute',     u:':mute <player>',            l:'Moderators'},
+  {n:'unmute',   u:':unmute <player>',          l:'Moderators'},
+  {n:'bring',    u:':bring <player>',           l:'Moderators'},
+  {n:'tp',       u:':tp <p1> <p2>',             l:'Moderators'},
+  {n:'sm',       u:':sm <message>',             l:'Admins'},
+  {n:'respawn',  u:':respawn <player>',         l:'Moderators'},
+  {n:'jail',     u:':jail <player>',            l:'Admins'},
+  {n:'unjail',   u:':unjail <player>',          l:'Admins'},
+  {n:'speed',    u:':speed <player> <val>',     l:'Admins'},
+  {n:'sparkles', u:':sparkles <player>',        l:'Moderators'},
+  {n:'fire',     u:':fire <player>',            l:'Moderators'},
+  {n:'unfire',   u:':unfire <player>',          l:'Moderators'},
+  {n:'slock',    u:':slock',                    l:'HeadAdmins'},
+  {n:'unslock',  u:':unslock',                  l:'HeadAdmins'},
+  {n:'shutdown', u:':shutdown',                 l:'HeadAdmins'},
+];
+
+// ── Login ──────────────────────────────────────────────────────
+async function login() {
+  const uid = document.getElementById('lUid').value.trim();
+  const key = document.getElementById('lKey').value.trim();
+  const sec = document.getElementById('lSec').value.trim();
+  const err = document.getElementById('lerr');
+  const btn = document.getElementById('lbtn');
+
+  if (!uid || !key || !sec) { err.textContent = 'Remplis tous les champs.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Connexion...';
+  err.textContent = '';
+
+  // Test rapide : envoie une commande vide pour vérifier les credentials
+  const ok = await callServer(uid, key, sec, ':ping');
+  // On accepte même si :ping n'existe pas dans Adonis — l'important c'est que l'API répond
+  
+  S = { uid, key, sec };
+  localStorage.setItem('wa_uid', uid);
+
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('hinfo').textContent = `Universe ${uid}`;
+
+  buildTable();
+  log('in', `Connecté — Universe ID: ${uid}`);
+
+  // Keep-alive : ping le serveur toutes les 10 minutes pour pas qu'il dorme
+  setInterval(() => fetch('/ping'), 10 * 60 * 1000);
+
+  btn.disabled = false; btn.textContent = 'ACCÉDER AU PANEL →';
+}
+
+function logout() {
+  S = { uid:'', key:'', sec:'' };
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  clearLog();
+}
+
+// ── Appel au serveur (proxy → Roblox) ─────────────────────────
+async function callServer(uid, key, sec, command) {
+  try {
+    const res = await fetch('/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ universeId: uid, apiKey: key, secret: sec, command })
+    });
+    return res;
+  } catch(e) {
+    return null;
+  }
+}
+
+// ── Envoyer une commande ───────────────────────────────────────
+async function send(command) {
+  log('in', `→ ${command}`);
+
+  const res = await callServer(S.uid, S.key, S.sec, command);
+
+  if (!res) {
+    log('er', '❌ Serveur inaccessible');
+    toast('Serveur inaccessible', 'er');
+    return;
+  }
+
+  if (res.ok) {
+    log('ok', `✅ Envoyé : ${command}`);
+    toast('Commande envoyée !', 'ok');
+  } else {
+    const data = await res.json().catch(() => ({}));
+    const msg = data.error || `Erreur ${res.status}`;
+
+    if (res.status === 403) {
+      log('er', '❌ API Key invalide ou permission "Messaging Service: Publish" manquante');
+      toast('API Key invalide !', 'er');
+    } else if (res.status === 400) {
+      log('er', '❌ Universe ID invalide');
+      toast('Universe ID invalide !', 'er');
+    } else {
+      log('er', `❌ ${msg}`);
+      toast(msg, 'er');
+    }
+  }
+}
+
+async function sendCmd() {
+  const cmd = document.getElementById('cmdinp').value.trim();
+  if (!cmd) { toast('Commande vide !', 'er'); return; }
+  const btn = document.getElementById('sendbtn');
+  btn.disabled = true; btn.textContent = '⏳ Envoi...';
+  try { await send(cmd); document.getElementById('cmdinp').value = ''; }
+  finally { btn.disabled = false; btn.textContent = '▶ ENVOYER'; }
+}
+
+async function qc(action) {
+  const t = document.getElementById('qtarget').value.trim();
+  if (!t) { toast('Spécifie un joueur !', 'er'); return; }
+  let cmd = `:${action} ${t}`;
+  if (action === 'kick' || action === 'ban') {
+    const r = prompt(`Raison pour ${action} de "${t}" :`);
+    if (r) cmd += ` ${r}`;
+  }
+  await send(cmd);
+}
+
+async function sendSM() {
+  const msg = document.getElementById('smmsg').value.trim();
+  if (!msg) { toast('Message vide !', 'er'); return; }
+  await send(`:sm ${msg}`);
+  document.getElementById('smmsg').value = '';
+}
+
+async function doShutdown() {
+  if (confirm('Shutdown le serveur Roblox ?')) await send(':shutdown');
+}
+
+// ── Log ────────────────────────────────────────────────────────
+function log(type, msg) {
+  const box = document.getElementById('logbox');
+  box.querySelector('.logempty')?.remove();
+  const t = new Date().toLocaleTimeString('fr-FR');
+  const el = document.createElement('div');
+  el.className = `ll ${type}`;
+  el.innerHTML = `<span class="t">${t}</span><span class="m">${msg}</span>`;
+  box.prepend(el);
+  while (box.children.length > 200) box.removeChild(box.lastChild);
+}
+function clearLog() {
+  document.getElementById('logbox').innerHTML = '<div class="logempty">En attente de commandes...</div>';
+}
+
+// ── Toast ──────────────────────────────────────────────────────
+let _tt;
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `show ${type}`;
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.className = '', 3000);
+}
+
+// ── Table commandes ────────────────────────────────────────────
+function buildTable() {
+  document.getElementById('ctbody').innerHTML = CMDS.map(c => {
+    const bc = c.l==='Moderators'?'bmod':c.l==='Admins'?'badm':'bhead';
+    return `<tr onclick="document.getElementById('cmdinp').value='${c.u}';document.getElementById('cmdinp').focus()">
+      <td>${c.n}</td><td class="cmono">${c.u}</td>
+      <td><span class="badge ${bc}">${c.l}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Keyboard ───────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.activeElement.id === 'cmdinp') sendCmd();
+  if (document.activeElement.id === 'lSec') login();
+  const order = ['lUid','lKey','lSec'];
+  const i = order.indexOf(document.activeElement.id);
+  if (i >= 0 && i < order.length-1) document.getElementById(order[i+1]).focus();
+});
+
+// ── Restore ────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const uid = localStorage.getItem('wa_uid');
+  if (uid) document.getElementById('lUid').value = uid;
+});
+</script>
+</body>
+</html>
